@@ -17,6 +17,7 @@ router.post(
     body("password", "Password must be more than 3").isLength({ min: 3 }),
   ],
   async (req, res) => {
+    let success = false;
     // If error , return Bad request and the error
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -27,9 +28,10 @@ router.post(
       let user = await User.findOne({ email: req.body.email });
       // Check Whther User is Exist or Not
       if (user) {
-        return res
-          .status(400)
-          .json({ error: "Sorry a user with this email are already exists" });
+        return res.status(400).json({
+          success,
+          error: "Sorry a user with this email are already exists",
+        });
       }
       // Make Privacy to Password with Salt
       const salt = await bcrypt.genSalt(10);
@@ -44,7 +46,8 @@ router.post(
       const data = { user: { id: user.id } };
       // Assign Token for Authentication
       const authotoken = jwt.sign(data, JWT_SECRET);
-      res.json({ authotoken });
+      success = true;
+      res.json({ success, authotoken });
     } catch (error) {
       console.error(error.message);
       res.status(500).send("Internal server Error occured");
@@ -57,9 +60,11 @@ router.post(
   "/login",
   [
     body("email", "Enter a Valid Email").isEmail(),
-    body("password", "Password can't blanck").exists({ min: 3 }),
+    body("password", "Password can't blank").exists({ min: 3 }),
   ],
   async (req, res) => {
+    let success = false;
+    //If ther are error return error message
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -72,7 +77,7 @@ router.post(
       if (!user) {
         return res
           .status(400)
-          .json({ error: "Please try with correnct Credentisals" });
+          .json({ success, error: "Please try with correnct Credentisals" });
       }
 
       // Compare Password with Bcrypted Password
@@ -80,7 +85,7 @@ router.post(
       if (!passwordCompare) {
         return res
           .status(400)
-          .json({ error: "Please try with correnct Credentisals" });
+          .json({ success, error: "Please try with correnct Credentisals" });
       }
 
       const data = {
@@ -90,7 +95,8 @@ router.post(
       };
       // Assign Token for Authentication
       const authotoken = jwt.sign(data, JWT_SECRET);
-      res.json({ authotoken });
+      success = true;
+      res.json({ success, authotoken });
     } catch (error) {
       console.error(error.message);
       res.status(500).send("Internal server Error occured");

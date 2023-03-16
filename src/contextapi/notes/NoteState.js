@@ -1,12 +1,8 @@
 import NoteContext from "./NoteContext";
 import { useState } from "react";
-const NoteState = (props) => {
-  // const s1 = {
-  //   name: "kamal",
-  //   class: "5c",
-  // };
 
-  // const [state, setState] = useState(s1);
+const NoteState = (props) => {
+  const host = "http://localhost:3030";
   const notesInitial = [
     {
       _id: "61322f19553781a8ca8d0e086",
@@ -74,6 +70,22 @@ const NoteState = (props) => {
   ];
   const [notes, setNotes] = useState(notesInitial);
 
+  //Get All Notes
+  const getNotes = async () => {
+    //API Call
+    const response = await fetch(`$(host)/api/notes/fetch`, {
+      metod: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "auth-token":
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjQwYWJmMzBmMjE3MTE4ZTBiN2U5OWE3In0sImlhdCI6MTY3ODU0NjU0M30.ZMmr8z8xDz0RLiHqcw427FfpHOW4iRi6J9f2qPXuQ98",
+      },
+    });
+    const json = await response.json();
+    console.log(json);
+    setNotes(json);
+  };
+
   // Add Notes
   const addNotes = (title, description, tag) => {
     // API Call
@@ -81,9 +93,9 @@ const NoteState = (props) => {
     const note = {
       _id: "61322f19553781a8ca8d0e908",
       user: "6131dc5e3e4037cd4734a066",
-      title: "My Title",
-      description: "Please wake up early",
-      tag: "personal",
+      title: title,
+      description: description,
+      tag: tag,
       date: "2021-09-03T14:20:09.668Z",
       __v: 0,
     };
@@ -101,18 +113,41 @@ const NoteState = (props) => {
   };
 
   // Update Notes
-  const updateNotes = (id, title, description, tag) => {};
+  const updateNotes = async (id, title, description, tag) => {
+    // API Call
+    const response = await fetch(
+      `${host}/api/notes/updatenotes/640ebf41434f740fc4ce1909`,
+      {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json;charset=UTF-8",
+          "auth-token":
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjQwYWJmMzBmMjE3MTE4ZTBiN2U5OWE3In0sImlhdCI6MTY3ODU0NjU0M30.ZMmr8z8xDz0RLiHqcw427FfpHOW4iRi6J9f2qPXuQ98",
+        },
+        // body: JSON.stringify(title, description, tag);
+      }
+    );
+    const json = response.json();
 
-  // const update = () => {
-  //   setTimeout(() => {
-  //     setState({
-  //       name: "Goppi",
-  //       class: "4c",
-  //     });
-  //   }, 2000);
-  // };
+    // .then(response => response.json())
+    // .then(json => console.log(json));
+    // .catch(err => console.log(err));
+
+    //Login to Edit in client
+    for (let i = 0; i < notes.length; i++) {
+      const element = notes[i];
+      if (element._id === id) {
+        element.title = title;
+        element.description = description;
+        element.tag = tag;
+      }
+    }
+  };
+
   return (
-    <NoteContext.Provider value={{ notes, addNotes, deleteNotes, updateNotes }}>
+    <NoteContext.Provider
+      value={{ notes, setNotes, addNotes, deleteNotes, updateNotes, getNotes }}
+    >
       {props.children}
     </NoteContext.Provider>
   );
