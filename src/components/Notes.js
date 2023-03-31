@@ -2,10 +2,12 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import NoteContext from "../contextapi/notes/NoteContext";
 import NoteItem from "./NoteItem";
 import AddNote from "./AddNote";
+import { useHistory } from "react-router-dom";
 
 const Notes = (props) => {
   const context = useContext(NoteContext);
   const { notes, getNotes, updateNotes } = context;
+  let history = useHistory();
   const [note, setNotes] = useState({
     id: "",
     etitle: "",
@@ -16,7 +18,11 @@ const Notes = (props) => {
   const refClose = useRef(null);
 
   useEffect(() => {
-    getNotes();
+    if (localStorage.getItem("token")) {
+      getNotes();
+    } else {
+      history.push("/login");
+    }
   }, []);
 
   const updateNote = (currentNote) => {
@@ -115,14 +121,6 @@ const Notes = (props) => {
                     onChange={onChange}
                   />
                 </div>
-                {/* <button
-                  type="submit"
-                  className="btn btn-primary"
-                  onClick={handleClick}
-                >
-                  Add
-                </button> */}
-                {/* <i className="fa-solid fa-paper-plane-top"></i> */}
               </form>
             </div>
             <div className="modal-footer">
